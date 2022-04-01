@@ -13,6 +13,7 @@ public class Jugador : MonoBehaviour
 
     private Rigidbody2D cuerpo;
     private LayerMask suelo;
+    private Collider2D armadura;
 
     private Vector2 movimiento;
 
@@ -26,31 +27,43 @@ public class Jugador : MonoBehaviour
         cuerpo = GetComponent<Rigidbody2D>();
         animador = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
-        suelo = LayerMask.NameToLayer("Suelo");
+        armadura = GetComponent<CapsuleCollider2D>();
+        suelo = LayerMask.GetMask("Suelo");
     }
     private void Update()
     {
-        switch (cuerpo.velocity.x)
+        if (estaEnSuelo)
         {
-            case > 0:
-                sprite.flipX = false;
-                animador.SetBool("estaCorriendo", true);
-                break;
-            case < 0:
-                sprite.flipX = true;
-                animador.SetBool("estaCorriendo", true);
-                break;
-            default:
-                animador.SetBool("estaCorriendo", false);
-                break;
+            switch (cuerpo.velocity.x)
+            {
+                case > 0:
+                    sprite.flipX = false;
+                    animador.SetBool("estaCorriendo", true);
+                    break;
+                case < 0:
+                    sprite.flipX = true;
+                    animador.SetBool("estaCorriendo", true);
+                    break;
+                default:
+                    animador.SetBool("estaCorriendo", false);
+                    break;
+            }
         }
-        ComprobarEstaEnSuelo();
+        estaEnSueloLayer();
     }
+
+    private void estaEnSueloLayer()
+    {
+        estaEnSuelo = armadura.IsTouchingLayers(suelo);
+        animador.SetBool("estaSaltando", !estaEnSuelo);
+    }
+    /*
     private void ComprobarEstaEnSuelo()
     {
         estaEnSuelo = cuerpo.IsTouchingLayers(suelo);
         animador.SetBool("estaSaltando", !estaEnSuelo);
     }
+    */
     private void FixedUpdate()
     {
         cuerpo.velocity = new Vector2(movimiento.x, cuerpo.velocity.y);
