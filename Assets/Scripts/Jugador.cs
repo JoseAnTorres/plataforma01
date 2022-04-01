@@ -21,6 +21,7 @@ public class Jugador : MonoBehaviour
 
     private Animator animador;
     private SpriteRenderer sprite;
+    private Collider2D plataformaActiva;
     // Start is called before the first frame update
     private void Start()
     {
@@ -56,6 +57,10 @@ public class Jugador : MonoBehaviour
     {
         estaEnSuelo = armadura.IsTouchingLayers(suelo);
         animador.SetBool("estaSaltando", !estaEnSuelo);
+        if (!estaEnSuelo)
+        {
+            plataformaActiva = null;
+        }
     }
     /*
     private void ComprobarEstaEnSuelo()
@@ -66,17 +71,38 @@ public class Jugador : MonoBehaviour
     */
     private void FixedUpdate()
     {
-        cuerpo.velocity = new Vector2(movimiento.x, cuerpo.velocity.y);
+        if (estaEnSuelo) {
+            cuerpo.velocity = new Vector2(movimiento.x, cuerpo.velocity.y);
+        }
+        
     }
     private void OnMover(InputValue entrada)
     {
         movimiento = new Vector2(entrada.Get<Vector2>().x * velocidad, entrada.Get<Vector2>().y);
+        if(movimiento.y < 0)
+        {
+            IntentarAtravesar();
+        }
     }
     private void OnSaltar()
     {
         if (estaEnSuelo)
         {
             cuerpo.AddForce(Vector2.up * fuerzaSalto, ForceMode2D.Impulse);
+        }
+    }
+    private void IntentarAtravesar()
+    {
+        if (plataformaActiva != null)
+        {
+            plataformaActiva.GetComponent<PlataformaAtravesable>().HacerAtravesable();
+        }
+    }
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if(other.gameObject.tag == "PlataformaAtravesable")
+        { 
+            plataformaActiva = other.collider;
         }
     }
 }
